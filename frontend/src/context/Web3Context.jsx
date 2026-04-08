@@ -115,7 +115,7 @@ export function Web3Provider({ children }) {
             chainId: "0xaa36a7",
             chainName: "Sepolia (Healthchain)",
             rpcUrls: [rpcUrl],
-            nativeCurrency: { name: "Sepolia ETH", symbol: "ETH", decimals: 18 },
+            nativeCurrency: { name: "Sepolia ETH", symbol: "SepoliaETH", decimals: 18 },
             blockExplorerUrls: ["https://sepolia.etherscan.io"],
           },
         ],
