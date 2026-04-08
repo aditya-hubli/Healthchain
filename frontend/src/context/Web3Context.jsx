@@ -21,6 +21,36 @@ export function Web3Provider({ children }) {
   const setupAccount = useCallback(async (ethereum) => {
     try {
       const prov = new ethers.providers.Web3Provider(ethereum);
+
+      // Route read calls through Alchemy directly, bypassing MetaMask's flaky RPC
+      const ALCHEMY_URL = import.meta.env.VITE_SEPOLIA_RPC_URL;
+      if (ALCHEMY_URL) {
+        const readProvider = new ethers.providers.StaticJsonRpcProvider(ALCHEMY_URL);
+        const originalSend = prov.send.bind(prov);
+        const READ_METHODS = new Set([
+          "eth_call",
+          "eth_getBalance",
+          "eth_getCode",
+          "eth_getStorageAt",
+          "eth_getLogs",
+          "eth_getBlockByNumber",
+          "eth_getBlockByHash",
+          "eth_getTransactionReceipt",
+          "eth_getTransactionByHash",
+          "eth_blockNumber",
+          "eth_estimateGas",
+          "eth_gasPrice",
+          "eth_feeHistory",
+          "net_version",
+        ]);
+        prov.send = async (method, params) => {
+          if (READ_METHODS.has(method)) {
+            return readProvider.send(method, params);
+          }
+          return originalSend(method, params);
+        };
+      }
+
       const sign = prov.getSigner();
       const addr = await sign.getAddress();
 
@@ -50,7 +80,8 @@ export function Web3Provider({ children }) {
 
   const connectWallet = useCallback(async () => {
     if (!window.ethereum) {
-      alert("Please install MetaMask!");
+      const { default: toast } = await import("react-hot-toast");
+      toast.error("Please install MetaMask!");
       return null;
     }
     setLoading(true);
