@@ -1,41 +1,46 @@
+import { ExternalLink } from "lucide-react";
 import { getIPFSUrl } from "../../utils/ipfs";
 
 export default function RecordCard({ record }) {
   const date = new Date(Number(record.createdAt) * 1000).toLocaleString();
 
   return (
-    <div className="bg-gradient-to-r from-white to-blue-50/30 rounded-xl border border-gray-100 p-5 hover:shadow-md transition-all hover:border-blue-200/50">
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 bg-blue-500 rounded-full" />
-          <h3 className="font-bold text-gray-900">{record.diagnosis}</h3>
+    <div className="rounded-xl border border-[var(--hc-border)] bg-black/30 hover:border-[var(--hc-border-strong)] hover:bg-black/40 transition-all p-5">
+      <div className="flex justify-between items-start mb-3 gap-4">
+        <div className="flex items-center gap-2.5">
+          <span className="hc-dot" />
+          <h3 className="font-display text-lg text-white">{record.diagnosis}</h3>
         </div>
-        <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">{date}</span>
+        <span className="font-mono-data text-[10px] uppercase tracking-[0.16em] text-[var(--hc-text-mute)] px-2.5 py-1 rounded-md border border-[var(--hc-border)] bg-white/[0.02] whitespace-nowrap">
+          {date}
+        </span>
       </div>
-      <div className="ml-4 space-y-1.5">
-        <p className="text-sm text-gray-700">
-          <span className="font-semibold text-gray-500 text-xs uppercase tracking-wider">Rx:</span>{" "}
+
+      <div className="ml-4 space-y-2 mb-4">
+        <p className="text-sm text-[var(--hc-text-dim)] leading-relaxed">
+          <span className="font-mono-data text-[10px] uppercase tracking-[0.18em] text-teal-300 mr-2">Rx</span>
           {record.prescription}
         </p>
         {record.notes && (
-          <p className="text-sm text-gray-500">
-            <span className="font-semibold text-gray-400 text-xs uppercase tracking-wider">Notes:</span>{" "}
+          <p className="text-sm text-[var(--hc-text-dim)] leading-relaxed">
+            <span className="font-mono-data text-[10px] uppercase tracking-[0.18em] text-[var(--hc-text-mute)] mr-2">Notes</span>
             {record.notes}
           </p>
         )}
       </div>
-      <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-100">
-        <span className="text-xs text-gray-400 font-mono">
-          Dr: {record.doctor.slice(0, 6)}...{record.doctor.slice(-4)}
+
+      <div className="flex justify-between items-center pt-3 border-t border-[var(--hc-border)]">
+        <span className="font-mono-data text-[10px] uppercase tracking-[0.16em] text-[var(--hc-text-mute)]">
+          Dr · {record.doctor.slice(0, 6)}…{record.doctor.slice(-4)}
         </span>
         {record.ipfsHash && (
           <a
             href={getIPFSUrl(record.ipfsHash)}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 font-mono-data text-[10px] uppercase tracking-[0.16em] text-teal-200 px-3 py-1.5 rounded-md border border-teal-300/30 bg-teal-400/5 hover:bg-teal-400/10 hover:border-teal-300/60 transition-all"
           >
-            View File ↗
+            View File <ExternalLink size={11} />
           </a>
         )}
       </div>
