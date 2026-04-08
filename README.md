@@ -2,10 +2,13 @@
 
 A decentralized healthcare data management system built on Ethereum that allows patients to control access to their medical records, doctors to create records with patient consent, and admins to manage the system — all enforced by smart contracts.
 
+**🌐 Live demo:** https://healthchain-eight.vercel.app (deployed on Sepolia testnet)
+
 ---
 
 ## Table of Contents
 
+- [For Testers (Live Demo)](#for-testers-live-demo)
 - [Problem Statement](#problem-statement)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
@@ -18,6 +21,57 @@ A decentralized healthcare data management system built on Ethereum that allows 
 - [IPFS / Pinata Setup](#ipfs--pinata-setup)
 - [End-to-End Test Flow](#end-to-end-test-flow)
 - [Running Smart Contract Tests](#running-smart-contract-tests)
+- [Deploying Your Own Copy (Sepolia + Vercel)](#deploying-your-own-copy-sepolia--vercel)
+
+---
+
+## For Testers (Live Demo)
+
+The dApp is live at **https://healthchain-eight.vercel.app**. The smart contracts run on the **Ethereum Sepolia testnet**, so anyone with MetaMask can try it out — no clone, no install, no local setup.
+
+### What you need
+
+1. **MetaMask** browser extension — https://metamask.io
+2. **Sepolia testnet enabled** — In MetaMask: ☰ menu → Settings → Advanced → toggle on **"Show test networks"**
+3. **Free Sepolia ETH** from a faucet (used to pay gas for transactions):
+   - https://cloud.google.com/application/web3/faucet/ethereum/sepolia (sign in with Google, 0.05 ETH/day)
+   - https://sepolia-faucet.pk910.de (browser mining, no signup)
+   - https://faucet.quicknode.com/ethereum/sepolia
+
+### How to use the live app
+
+1. Open https://healthchain-eight.vercel.app
+2. In MetaMask, switch the network to **Sepolia**
+3. Click **Connect MetaMask** on the site and approve in MetaMask
+4. Your wallet address is now your identity in the system
+
+### What role do you get?
+
+| Wallet | Role | How to get it |
+|---|---|---|
+| **Admin** | Full system control, register doctors, view full audit log | Only the wallet that deployed the contracts. Cannot be transferred. |
+| **Doctor** | Create medical records for patients who granted access | Must be registered by the admin — send your wallet address to the project owner |
+| **Patient** | Self-register, grant/revoke access to doctors, view own records | Click **Register as Patient** on the landing page after connecting |
+
+### Things to know
+
+- **Transactions take ~12 seconds** (real Sepolia block time, not instant like local Hardhat)
+- **Every action costs a tiny bit of Sepolia ETH** for gas — the faucet gives more than enough
+- **You will see MetaMask popups** for every write action (register, grant access, create record) asking you to confirm and sign — this is normal
+- **Read actions are free and instant** (viewing records, audit log, dashboards)
+- **Files** uploaded by doctors are stored on **IPFS via Pinata** — they're decentralized and content-addressed
+- **The audit log** captures every action with the actor's address, subject, and timestamp — fully on-chain and tamper-proof
+
+### Suggested testing flow
+
+1. Connect with one wallet → register as a **patient**
+2. (Ask admin to register a second wallet as a **doctor**)
+3. As patient: go to **Grant Access**, paste the doctor's address, set duration → confirm in MetaMask
+4. Switch MetaMask to the doctor account → refresh → see the patient in your list
+5. As doctor: go to **Create Record**, upload a file, fill in the diagnosis → confirm
+6. Switch back to the patient account → see the new record under **My Records**
+7. As patient: go to **Manage Access** → revoke the doctor → confirm
+8. The doctor can no longer create records for you, and the audit log shows every step
 
 ---
 
@@ -394,3 +448,103 @@ This runs all 20 unit tests across the 4 contracts:
 
   20 passing
 ```
+
+---
+
+## Deploying Your Own Copy (Sepolia + Vercel)
+
+Want your own independent instance with **you as the admin**? Here's the full path.
+
+### 1. Get a Sepolia RPC URL (free)
+
+Sign up at [alchemy.com](https://alchemy.com) → create app with **Chain: Ethereum, Network: Sepolia** → copy the HTTPS URL (looks like `https://eth-sepolia.g.alchemy.com/v2/YOUR_KEY`).
+
+### 2. Get a deployer wallet + test ETH
+
+- Create a fresh MetaMask account (don't use one with real funds)
+- Export its private key (Account details → Show private key) — strip the `0x` prefix
+- Fund it with ~0.05 Sepolia ETH from a faucet (see [For Testers](#for-testers-live-demo))
+- **This wallet will become the permanent admin of your dApp**
+
+### 3. Configure the contracts
+
+```bash
+cd blockchain
+cp .env.example .env
+```
+
+Edit `.env`:
+```
+SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_KEY
+PRIVATE_KEY=your_private_key_without_0x
+```
+
+### 4. Deploy contracts to Sepolia
+
+```bash
+npx hardhat compile
+npx hardhat run scripts/deploy.js --network sepolia
+```
+
+Wait ~1–2 minutes. Copy the 4 addresses printed at the end.
+
+### 5. Update the frontend with the new addresses
+
+Edit `frontend/src/config/contracts.js` and paste the 4 addresses from step 4.
+
+### 6. Configure frontend env vars locally
+
+Create `frontend/.env`:
+```
+VITE_PINATA_API_KEY=your_pinata_key
+VITE_PINATA_API_SECRET=your_pinata_secret
+VITE_SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_KEY
+```
+
+`VITE_SEPOLIA_RPC_URL` is critical — the frontend uses it to bypass MetaMask's flaky public RPC for read calls.
+
+### 7. Test locally against Sepolia
+
+```bash
+cd ../frontend
+npm install
+npm run dev
+```
+
+In MetaMask, switch to Sepolia, connect — you should land on the admin dashboard.
+
+### 8. Push to GitHub
+
+```bash
+git add .
+git commit -m "Deploy to Sepolia"
+git push
+```
+
+⚠️ **Verify `blockchain/.env` is NOT in the commit** — your private key must stay local. It's already in `.gitignore` but double-check with `git status`.
+
+### 9. Deploy frontend to Vercel
+
+1. Go to [vercel.com/new](https://vercel.com/new) → import your GitHub repo
+2. Configure:
+   - **Root Directory**: `frontend`
+   - **Framework Preset**: Vite (auto-detected)
+3. **Environment Variables** (Settings → Environment Variables — apply to Production, Preview, Development):
+   - `VITE_PINATA_API_KEY`
+   - `VITE_PINATA_API_SECRET`
+   - `VITE_SEPOLIA_RPC_URL`
+4. Click **Deploy**
+
+### 10. Share your URL
+
+Anyone with MetaMask + Sepolia ETH can now use your dApp at `https://your-project.vercel.app`. Your deployer wallet is the only admin — keep its private key safe.
+
+### Common gotchas
+
+- **"insufficient funds"** during deploy → top up the deployer wallet from a faucet
+- **"chain id mismatch"** → your Alchemy URL is set to Mainnet instead of Sepolia
+- **"RPC endpoint returned too many errors"** → make sure `VITE_SEPOLIA_RPC_URL` is set in Vercel; the frontend routes reads through it
+- **Vercel build fails with "Rolldown failed to resolve"** → forgot to commit `package.json`/`package-lock.json` after `npm install`
+- **CALL_EXCEPTION on connect** → `frontend/src/config/contracts.js` still has old addresses; update and push
+- **Vercel 404 on `/doctor` refresh** → handled by `frontend/vercel.json` (SPA rewrite)
+- **Pinata uploads fail in prod** → env vars must use the `VITE_` prefix or Vite won't expose them to the browser
