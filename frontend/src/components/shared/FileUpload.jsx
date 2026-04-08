@@ -1,4 +1,5 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { uploadToIPFS } from "../../utils/ipfs";
 
 export default function FileUpload({ onUploaded }) {
@@ -15,7 +16,7 @@ export default function FileUpload({ onUploaded }) {
       onUploaded(cid);
     } catch (err) {
       console.error("IPFS upload failed:", err);
-      alert("File upload failed. Check Pinata API keys in .env");
+      toast.error("File upload failed. Check Pinata API keys in .env");
     }
     setUploading(false);
   };

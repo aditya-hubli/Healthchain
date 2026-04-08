@@ -1,4 +1,6 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
+import { FilePlus2 } from "lucide-react";
 import { useWeb3 } from "../../context/Web3Context";
 import FileUpload from "../shared/FileUpload";
 
@@ -11,6 +13,7 @@ export default function CreateRecord({ patient, onCreated }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus("pending");
+    const tid = toast.loading("Creating record on-chain...");
     try {
       const tx = await contracts.recordStorage.createRecord(
         patient,
@@ -24,19 +27,20 @@ export default function CreateRecord({ patient, onCreated }) {
       setForm({ diagnosis: "", prescription: "", notes: "" });
       setIpfsHash("");
       onCreated?.();
+      toast.success("Record created!", { id: tid });
       setTimeout(() => setStatus(""), 3000);
     } catch (err) {
       console.error(err);
       setStatus("error");
-      alert(err?.reason || err?.data?.message || "Failed to create record");
+      toast.error(err?.reason || err?.data?.message || "Failed to create record", { id: tid });
     }
   };
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-lg">
-          ✏️
+        <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600">
+          <FilePlus2 size={20} />
         </div>
         <div>
           <h2 className="text-lg font-bold text-gray-800">Create Record</h2>

@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
+import { Stethoscope } from "lucide-react";
 import { useWeb3 } from "../../context/Web3Context";
 
 export default function ManageAccess() {
@@ -25,13 +27,15 @@ export default function ManageAccess() {
 
   const handleRevoke = async (doctor) => {
     setRevoking(doctor);
+    const tid = toast.loading("Revoking access...");
     try {
       const tx = await contracts.accessControl.revokeAccess(doctor);
       await tx.wait();
       await loadDoctors();
+      toast.success("Access revoked", { id: tid });
     } catch (err) {
       console.error(err);
-      alert(err?.reason || err?.data?.message || "Failed to revoke access");
+      toast.error(err?.reason || err?.data?.message || "Failed to revoke access", { id: tid });
     }
     setRevoking(null);
   };
@@ -39,8 +43,8 @@ export default function ManageAccess() {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center text-lg">
-          🩺
+        <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center text-orange-600">
+          <Stethoscope size={20} />
         </div>
         <div>
           <h2 className="text-lg font-bold text-gray-800">My Doctors</h2>

@@ -1,66 +1,129 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import toast from "react-hot-toast";
+import { UserPlus, ShieldCheck, AlertCircle, ChevronRight } from "lucide-react";
 import { useWeb3 } from "../../context/Web3Context";
+
+const ETH_RE = /^0x[a-fA-F0-9]{40}$/;
 
 export default function RegisterDoctor() {
   const { contracts } = useWeb3();
   const [address, setAddress] = useState("");
   const [status, setStatus] = useState("");
 
+  const validity = useMemo(() => {
+    if (!address) return "empty";
+    if (ETH_RE.test(address)) return "valid";
+    if (address.startsWith("0x") && address.length <= 42) return "typing";
+    return "invalid";
+  }, [address]);
+
   const handleRegister = async (e) => {
     e.preventDefault();
+    if (validity !== "valid") return;
     setStatus("pending");
+    const tid = toast.loading("Broadcasting transaction…");
     try {
       const tx = await contracts.roleManager.registerDoctor(address);
       await tx.wait();
       setStatus("success");
       setAddress("");
+      toast.success("Doctor registered on-chain", { id: tid });
       setTimeout(() => setStatus(""), 3000);
     } catch (err) {
       console.error(err);
       setStatus("error");
-      alert(err?.reason || err?.data?.message || "Failed to register doctor");
+      toast.error(err?.reason || err?.data?.message || "Registration failed", { id: tid });
     }
   };
 
+  const inputClass =
+    "hc-input " +
+    (validity === "valid" ? "is-valid" : validity === "invalid" ? "is-invalid" : "");
+
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
-      <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-lg">
-          👨‍⚕️
+    <div className="hc-card p-7 h-full">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-teal-400/20 to-emerald-400/10 border border-teal-300/30 flex items-center justify-center text-teal-200">
+            <UserPlus size={18} />
+          </div>
+          <div>
+            <p className="font-mono-data text-[10px] uppercase tracking-[0.2em] text-[var(--hc-text-mute)]">
+              Action · 01
+            </p>
+            <h2 className="font-display text-xl text-white">Provision Clinician</h2>
+          </div>
         </div>
-        <h2 className="text-lg font-bold text-gray-800">Register Doctor</h2>
       </div>
-      <form onSubmit={handleRegister} className="space-y-4">
+
+      <form onSubmit={handleRegister} className="space-y-5">
         <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1.5">
-            Doctor's Ethereum Address
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="font-mono-data text-[10px] uppercase tracking-[0.2em] text-[var(--hc-text-dim)]">
+              EVM Address
+            </label>
+            <div className="flex items-center gap-1.5">
+              {validity === "valid" && (
+                <>
+                  <ShieldCheck size={11} className="text-emerald-300" />
+                  <span className="font-mono-data text-[10px] uppercase tracking-wider text-emerald-300">
+                    Checksum OK
+                  </span>
+                </>
+              )}
+              {validity === "invalid" && (
+                <>
+                  <AlertCircle size={11} className="text-rose-300" />
+                  <span className="font-mono-data text-[10px] uppercase tracking-wider text-rose-300">
+                    Invalid Format
+                  </span>
+                </>
+              )}
+              {validity === "typing" && (
+                <span className="font-mono-data text-[10px] uppercase tracking-wider text-[var(--hc-text-mute)]">
+                  Awaiting…
+                </span>
+              )}
+            </div>
+          </div>
           <input
             type="text"
-            placeholder="0x..."
+            placeholder="0x0000000000000000000000000000000000000000"
             value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-mono"
-            required
+            onChange={(e) => setAddress(e.target.value.trim())}
+            className={inputClass}
+            spellCheck={false}
+            autoComplete="off"
           />
+          <p className="mt-2 font-mono-data text-[10px] text-[var(--hc-text-mute)]">
+            42-char hex · prefixed with 0x · validated client-side
+          </p>
         </div>
+
         <button
           type="submit"
-          disabled={status === "pending"}
-          className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-2.5 rounded-xl font-medium shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={status === "pending" || validity !== "valid"}
+          className="hc-btn w-full"
         >
           {status === "pending" ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Registering...
-            </span>
+            <>
+              <span className="w-3.5 h-3.5 border-2 border-black/40 border-t-black rounded-full animate-spin" />
+              Broadcasting
+            </>
           ) : (
-            "Register Doctor"
+            <>
+              Sign & Register
+              <ChevronRight size={16} />
+            </>
           )}
         </button>
+
         {status === "success" && (
-          <div className="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-2.5 rounded-xl animate-slide-down">
-            Doctor registered successfully!
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-emerald-400/30 bg-emerald-400/5 animate-slide-down">
+            <span className="hc-dot" />
+            <span className="font-mono-data text-[11px] text-emerald-200 uppercase tracking-wider">
+              Transaction confirmed
+            </span>
           </div>
         )}
       </form>

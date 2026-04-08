@@ -1,4 +1,6 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
+import { Unlock } from "lucide-react";
 import { useWeb3 } from "../../context/Web3Context";
 
 export default function GrantAccess({ onGranted }) {
@@ -10,25 +12,27 @@ export default function GrantAccess({ onGranted }) {
   const handleGrant = async (e) => {
     e.preventDefault();
     setStatus("pending");
+    const tid = toast.loading("Granting access...");
     try {
       const tx = await contracts.accessControl.grantAccess(doctorAddr, duration);
       await tx.wait();
       setStatus("success");
       setDoctorAddr("");
       onGranted?.();
+      toast.success("Access granted!", { id: tid });
       setTimeout(() => setStatus(""), 3000);
     } catch (err) {
       console.error(err);
       setStatus("error");
-      alert(err?.reason || err?.data?.message || "Failed to grant access");
+      toast.error(err?.reason || err?.data?.message || "Failed to grant access", { id: tid });
     }
   };
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center text-lg">
-          🔓
+        <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center text-green-600">
+          <Unlock size={20} />
         </div>
         <h2 className="text-lg font-bold text-gray-800">Grant Access</h2>
       </div>

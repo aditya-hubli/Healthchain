@@ -1,34 +1,241 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap");
+
+:root {
+  --hc-bg: #050b15;
+  --hc-bg-2: #0a1424;
+  --hc-surface: rgba(13, 24, 42, 0.55);
+  --hc-border: rgba(64, 226, 213, 0.12);
+  --hc-border-strong: rgba(64, 226, 213, 0.28);
+  --hc-text: #e6f1ff;
+  --hc-text-dim: #8aa0bd;
+  --hc-text-mute: #4d6285;
+  --hc-teal: #2dd4bf;
+  --hc-teal-glow: #5eead4;
+  --hc-bio: #86efac;
+  --hc-amber: #fbbf24;
+  --hc-rose: #fb7185;
+  --hc-violet: #a78bfa;
+}
 
 body {
   margin: 0;
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-family: "Instrument Sans", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  background: var(--hc-bg);
+  color: var(--hc-text);
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+.font-display { font-family: "Syne", system-ui, sans-serif; letter-spacing: -0.02em; }
+.font-mono-data { font-family: "DM Mono", "JetBrains Mono", monospace; }
+
+/* ============ Aurora gradient mesh background ============ */
+.hc-aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: radial-gradient(ellipse at top, #0a1828 0%, #050b15 60%);
+  pointer-events: none;
+}
+.hc-aurora::before,
+.hc-aurora::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.55;
+  mix-blend-mode: screen;
+}
+.hc-aurora::before {
+  width: 720px; height: 720px;
+  left: -180px; top: -200px;
+  background: radial-gradient(circle, #0d9488 0%, transparent 60%);
+  animation: aurora-drift-a 28s ease-in-out infinite;
+}
+.hc-aurora::after {
+  width: 640px; height: 640px;
+  right: -160px; top: 30%;
+  background: radial-gradient(circle, #1e3a8a 0%, transparent 60%);
+  animation: aurora-drift-b 34s ease-in-out infinite;
+}
+.hc-aurora-grid {
+  position: fixed; inset: 0; z-index: 1;
+  background-image:
+    linear-gradient(rgba(64,226,213,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(64,226,213,0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  pointer-events: none;
 }
 
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes aurora-drift-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(120px, 80px) scale(1.15); }
+}
+@keyframes aurora-drift-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(-100px, -60px) scale(1.1); }
 }
 
-@keyframes pulse-slow {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+/* ============ Glass card ============ */
+.hc-card {
+  position: relative;
+  background: var(--hc-surface);
+  border: 1px solid var(--hc-border);
+  border-radius: 18px;
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 30px 60px -30px rgba(0,0,0,0.6);
+  transition: transform .35s cubic-bezier(.2,.7,.2,1), border-color .35s, box-shadow .35s;
+}
+.hc-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--hc-border-strong);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 40px 80px -30px rgba(45,212,191,0.18);
+}
+.hc-card::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(140deg, rgba(94,234,212,0.35), transparent 35%, transparent 65%, rgba(94,234,212,0.18));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+  opacity: .6;
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
+/* ============ Pulsing status dot ============ */
+.hc-dot {
+  position: relative;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--hc-bio);
+  box-shadow: 0 0 0 0 rgba(134,239,172,.6);
+  animation: hc-pulse 2.2s cubic-bezier(.4,0,.6,1) infinite;
+}
+@keyframes hc-pulse {
+  0%   { box-shadow: 0 0 0 0    rgba(134,239,172,.55); }
+  70%  { box-shadow: 0 0 0 10px rgba(134,239,172,0);   }
+  100% { box-shadow: 0 0 0 0    rgba(134,239,172,0);   }
 }
 
-.animate-slide-down {
-  animation: slideDown 0.3s ease-out forwards;
+/* ============ Stagger entrance ============ */
+@keyframes hc-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hc-rise { opacity: 0; animation: hc-rise .7s cubic-bezier(.2,.7,.2,1) forwards; }
+.hc-d-1 { animation-delay: .05s; }
+.hc-d-2 { animation-delay: .15s; }
+.hc-d-3 { animation-delay: .25s; }
+.hc-d-4 { animation-delay: .35s; }
+.hc-d-5 { animation-delay: .45s; }
+.hc-d-6 { animation-delay: .55s; }
+
+/* ============ Terminal / Audit Log ============ */
+.hc-terminal {
+  background: linear-gradient(180deg, rgba(3,8,18,0.92), rgba(7,16,30,0.92));
+  border: 1px solid rgba(94,234,212,0.18);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.hc-terminal::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(94,234,212,0.04) 0px,
+    rgba(94,234,212,0.04) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+.hc-scanline {
+  position: absolute; left: 0; right: 0; height: 80px;
+  background: linear-gradient(180deg, transparent, rgba(94,234,212,0.08), transparent);
+  pointer-events: none;
+  animation: hc-scan 6s linear infinite;
+}
+@keyframes hc-scan {
+  0%   { transform: translateY(-100px); }
+  100% { transform: translateY(800px); }
+}
+.hc-cursor::after {
+  content: "▊";
+  color: var(--hc-teal);
+  margin-left: 2px;
+  animation: hc-blink 1s steps(2) infinite;
+}
+@keyframes hc-blink { 50% { opacity: 0; } }
+
+/* ============ Input glow ============ */
+.hc-input {
+  width: 100%;
+  background: rgba(5,11,21,0.6);
+  border: 1px solid rgba(120,160,200,0.18);
+  color: var(--hc-text);
+  font-family: "DM Mono", monospace;
+  font-size: 13px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  outline: none;
+  transition: border-color .25s, box-shadow .25s, background .25s;
+}
+.hc-input::placeholder { color: var(--hc-text-mute); }
+.hc-input:focus {
+  border-color: rgba(94,234,212,0.5);
+  box-shadow: 0 0 0 4px rgba(45,212,191,0.08);
+}
+.hc-input.is-valid {
+  border-color: rgba(134,239,172,0.6);
+  box-shadow: 0 0 0 4px rgba(134,239,172,0.12), 0 0 24px rgba(134,239,172,0.18);
+}
+.hc-input.is-invalid {
+  border-color: rgba(251,113,133,0.55);
+  box-shadow: 0 0 0 4px rgba(251,113,133,0.10);
 }
 
-.animate-pulse-slow {
-  animation: pulse-slow 2s ease-in-out infinite;
+/* ============ Glow button ============ */
+.hc-btn {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 14px 22px;
+  border-radius: 12px;
+  font-family: "Syne", sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 13px;
+  color: #02110d;
+  background: linear-gradient(135deg, #5eead4, #2dd4bf 60%, #14b8a6);
+  border: 1px solid rgba(94,234,212,0.6);
+  box-shadow: 0 10px 30px -10px rgba(45,212,191,0.55), 0 0 0 1px rgba(94,234,212,0.25) inset;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .25s, filter .25s;
 }
+.hc-btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
+.hc-btn:active { transform: translateY(1px); }
+.hc-btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+/* ============ Sparkline placeholder ============ */
+.hc-spark {
+  height: 28px;
+  background:
+    linear-gradient(90deg, transparent, rgba(94,234,212,0.0)),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 28' preserveAspectRatio='none'><polyline fill='none' stroke='%235eead4' stroke-width='1.5' points='0,22 8,18 16,20 24,12 32,16 40,8 48,14 56,6 64,11 72,4 80,9 88,3 100,7'/></svg>");
+  background-size: 100% 100%;
+  opacity: .55;
+}
+
+/* legacy compat (other components still use these) */
+@keyframes fadeIn   { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideDown{ from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse-slow { 0%,100% { opacity: 1; } 50% { opacity: .7; } }
+.animate-fade-in   { animation: fadeIn .4s ease-out forwards; }
+.animate-slide-down{ animation: slideDown .3s ease-out forwards; }
+.animate-pulse-slow{ animation: pulse-slow 2s ease-in-out infinite; }

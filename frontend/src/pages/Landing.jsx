@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { useWeb3 } from "../context/Web3Context";
 
 export default function Landing() {
@@ -15,13 +16,15 @@ export default function Landing() {
 
   const handleRegisterPatient = async () => {
     setRegistering(true);
+    const tid = toast.loading("Registering as patient...");
     try {
       const tx = await contracts.roleManager.registerPatient();
       await tx.wait();
       await refreshRole();
+      toast.success("Welcome aboard!", { id: tid });
     } catch (err) {
       console.error("Registration failed:", err);
-      alert(err?.reason || err?.data?.message || "Registration failed");
+      toast.error(err?.reason || err?.data?.message || "Registration failed", { id: tid });
     }
     setRegistering(false);
   };
