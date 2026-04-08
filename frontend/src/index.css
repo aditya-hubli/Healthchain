@@ -22,8 +22,8 @@ body {
   margin: 0;
   font-family: "Instrument Sans", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
-  background: var(--hc-bg);
-  color: var(--hc-text);
+  background: #f9fafb;
+  color: #111827;
 }
 
 .font-display { font-family: "Syne", system-ui, sans-serif; letter-spacing: -0.02em; }
