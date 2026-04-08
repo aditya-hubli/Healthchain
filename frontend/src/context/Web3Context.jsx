@@ -97,6 +97,38 @@ export function Web3Provider({ children }) {
     }
   }, [setupAccount]);
 
+  const addSepoliaNetwork = useCallback(async () => {
+    if (!window.ethereum) {
+      toast.error("Please install MetaMask!");
+      return false;
+    }
+    const rpcUrl = import.meta.env.VITE_SEPOLIA_RPC_URL;
+    if (!rpcUrl) {
+      toast.error("Sepolia RPC URL not configured");
+      return false;
+    }
+    try {
+      await window.ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [
+          {
+            chainId: "0xaa36a7",
+            chainName: "Sepolia (Healthchain)",
+            rpcUrls: [rpcUrl],
+            nativeCurrency: { name: "Sepolia ETH", symbol: "ETH", decimals: 18 },
+            blockExplorerUrls: ["https://sepolia.etherscan.io"],
+          },
+        ],
+      });
+      toast.success("Sepolia network added — using reliable RPC");
+      return true;
+    } catch (err) {
+      console.error("Failed to add network:", err);
+      toast.error(err?.message || "Failed to add network");
+      return false;
+    }
+  }, []);
+
   const refreshRole = useCallback(async () => {
     if (!window.ethereum || !account) return;
     await setupAccount(window.ethereum);
@@ -151,7 +183,7 @@ export function Web3Provider({ children }) {
 
   return (
     <Web3Context.Provider
-      value={{ account, role, contracts, provider, signer, connectWallet, refreshRole, loading }}
+      value={{ account, role, contracts, provider, signer, connectWallet, refreshRole, addSepoliaNetwork, loading }}
     >
       {children}
     </Web3Context.Provider>

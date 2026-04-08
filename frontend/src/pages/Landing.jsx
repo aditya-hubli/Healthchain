@@ -9,6 +9,7 @@ import {
   Plug,
   ArrowRight,
   Hand,
+  Network,
 } from "lucide-react";
 import { useWeb3 } from "../context/Web3Context";
 
@@ -20,7 +21,7 @@ const FEATURES = [
 ];
 
 export default function Landing() {
-  const { account, role, contracts, refreshRole, connectWallet, loading } = useWeb3();
+  const { account, role, contracts, refreshRole, connectWallet, addSepoliaNetwork, loading } = useWeb3();
   const navigate = useNavigate();
   const [registering, setRegistering] = useState(false);
 
@@ -105,6 +106,17 @@ export default function Landing() {
                   Wallet = Identity · No passwords · No emails
                 </p>
               )}
+
+              <button
+                onClick={addSepoliaNetwork}
+                className="mt-5 flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--hc-border)] bg-white/[0.03] hover:bg-white/[0.07] hover:border-[var(--hc-border-strong)] transition-all font-mono-data text-[10px] uppercase tracking-[0.16em] text-teal-200"
+              >
+                <Network size={12} />
+                Add Reliable Sepolia RPC
+              </button>
+              <p className="mt-2 font-mono-data text-[9px] uppercase tracking-[0.16em] text-[var(--hc-text-mute)]">
+                Run this once if registration fails with "RPC too many errors"
+              </p>
             </div>
           </div>
 
