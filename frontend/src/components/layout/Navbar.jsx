@@ -15,7 +15,7 @@ export default function Navbar() {
   const accent = ROLE_ACCENT[role] || ROLE_ACCENT.none;
 
   return (
-    <nav className="relative z-30 border-b border-[var(--hc-border)] bg-black/40 backdrop-blur-xl">
+    <nav className="relative z-30 border-b border-[var(--hc-border)] bg-[#050b15]">
       <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
         {/* logo with node pulse */}
         <Link to="/" className="flex items-center gap-3 group">
