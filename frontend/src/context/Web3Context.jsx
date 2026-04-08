@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { ethers } from "ethers";
+import toast from "react-hot-toast";
 import CONTRACT_ADDRESSES from "../config/contracts";
 import RoleManagerABI from "../abis/RoleManager.json";
 import AuditTrailABI from "../abis/AuditTrail.json";
@@ -80,7 +81,6 @@ export function Web3Provider({ children }) {
 
   const connectWallet = useCallback(async () => {
     if (!window.ethereum) {
-      const { default: toast } = await import("react-hot-toast");
       toast.error("Please install MetaMask!");
       return null;
     }
